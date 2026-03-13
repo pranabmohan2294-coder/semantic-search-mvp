@@ -1,0 +1,46 @@
+Payment Policy
+
+TITLE: Accepted Payment Methods Customers can pay using credit cards
+debit cards UPI net banking and digital wallets.
+
+TITLE: Payment Authorization Payment gateways verify transaction details
+before confirming the order.
+
+TITLE: Payment Confirmation Customers receive confirmation once the
+payment is successfully processed.
+
+TITLE: Payment Failure Failed payments may occur due to insufficient
+balance or network issues.
+
+TITLE: Payment Retry Customers can retry failed payments from the order
+page.
+
+TITLE: UPI Payments UPI payments require approval from the customer
+mobile banking application.
+
+TITLE: Card Payments Card payments are processed through secure payment
+gateways.
+
+TITLE: Net Banking Net banking allows customers to pay directly through
+their bank accounts.
+
+TITLE: EMI Payments Certain products support installment payments
+through eligible credit cards.
+
+TITLE: Wallet Payments Digital wallets allow quick payments using stored
+balances.
+
+TITLE: Payment Security Transactions are protected using encryption and
+fraud monitoring systems.
+
+TITLE: Payment Fraud Detection Suspicious transactions may be flagged
+for manual review.
+
+TITLE: Payment Refund Handling Refunds for cancelled orders are
+automatically returned to the original payment method.
+
+TITLE: Payment Chargebacks Customers may initiate chargebacks through
+their bank for disputed transactions.
+
+TITLE: Payment Transaction Logs Payment systems maintain logs of all
+successful and failed transactions.

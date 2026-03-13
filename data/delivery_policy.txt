@@ -1,0 +1,46 @@
+Delivery Policy
+
+TITLE: Delivery Timeline Standard delivery usually takes two to five
+days depending on the shipping location.
+
+TITLE: Order Dispatch Orders are dispatched from the warehouse within
+twenty four hours after payment confirmation.
+
+TITLE: Shipment Tracking Customers receive a tracking number once the
+order is handed over to the logistics partner.
+
+TITLE: Delivery Attempt Policy Delivery partners typically attempt
+delivery up to three times before returning the package.
+
+TITLE: Delivery Address Accuracy Incorrect addresses may delay delivery
+or result in the order being returned to the warehouse.
+
+TITLE: Same Day Delivery Same day delivery is available only for select
+cities and orders placed before the daily cutoff time.
+
+TITLE: Delivery Confirmation Customers may need to provide an OTP or
+signature when receiving high value items.
+
+TITLE: Delivery Delays Weather conditions or transportation disruptions
+can extend delivery timelines.
+
+TITLE: Failed Delivery If the recipient is unavailable the courier may
+attempt redelivery on the next business day.
+
+TITLE: Delivery Notifications Customers receive notifications when
+orders are dispatched, out for delivery, and delivered.
+
+TITLE: International Shipping International deliveries may require
+customs clearance and additional documentation.
+
+TITLE: Delivery Charges Shipping fees depend on distance weight of the
+package and chosen delivery speed.
+
+TITLE: Delivery Partner Responsibilities Logistics partners must
+maintain package safety and update delivery status accurately.
+
+TITLE: Weekend Deliveries Weekend deliveries may be available in metro
+areas depending on courier availability.
+
+TITLE: Delivery Issue Reporting Customers can report delivery problems
+through the support portal within forty eight hours.

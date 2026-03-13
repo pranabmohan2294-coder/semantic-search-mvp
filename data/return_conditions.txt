@@ -1,0 +1,46 @@
+Return Policy
+
+TITLE: Return Eligibility Products can be returned within seven days if
+unused and in original packaging.
+
+TITLE: Return Request Process Customers initiate a return through the
+order history page and select the return reason.
+
+TITLE: Return Pickup Scheduling Once approved the logistics partner
+schedules a pickup from the customer address.
+
+TITLE: Return Packaging Requirement Items must be packed securely using
+the original packaging materials.
+
+TITLE: Return Inspection Warehouse teams inspect returned items before
+approving refunds or replacements.
+
+TITLE: Return Rejection Returns may be rejected if products show damage
+caused by misuse.
+
+TITLE: Return Window The return request must be submitted before the
+return window expires.
+
+TITLE: Return Replacement Option Customers may choose replacement
+instead of refund for eligible products.
+
+TITLE: Return Logistics Returned items are transported back to the
+fulfillment center for inspection.
+
+TITLE: Return Refund Process Refunds are initiated after the returned
+item passes inspection.
+
+TITLE: Return Tracking Customers can track return shipment progress
+through the order page.
+
+TITLE: Return Documentation Proof of purchase and order number are
+required to process returns.
+
+TITLE: Return Exceptions Certain hygiene products and personalized items
+cannot be returned.
+
+TITLE: Return Escalation Disputes regarding rejected returns may be
+escalated to the customer resolution team.
+
+TITLE: Return Customer Notification Customers receive updates when the
+return request is approved or rejected.
