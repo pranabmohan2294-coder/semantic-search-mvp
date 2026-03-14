@@ -2,88 +2,92 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 import os
 import re
+from rank_bm25 import BM25Okapi
 
-# -----------------------------
+
+# ---------------------------
 # Load embedding model
-# -----------------------------
+# ---------------------------
+
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# -----------------------------
-# Initialize Chroma vector DB
-# -----------------------------
+
+# ---------------------------
+# Initialize Chroma DB
+# ---------------------------
+
 client = chromadb.Client()
 
 collection = client.create_collection(
     name="policy_documents"
 )
 
-# -----------------------------
-# Function: semantic chunking
-# -----------------------------
+
+# ---------------------------
+# Semantic Chunking Function
+# ---------------------------
+
 def chunk_document(text):
 
-    # Split by section titles
-    sections = re.split(r'Section \d+:', text)
+    sections = re.split(r'TITLE:', text)
 
     chunks = []
 
     for section in sections:
+
         cleaned = section.strip()
 
-        if len(cleaned) > 100:   # ignore tiny chunks
+        if len(cleaned) > 50:
             chunks.append(cleaned)
 
     return chunks
 
 
-# -----------------------------
-# Load documents
-# -----------------------------
+# ---------------------------
+# Load Documents
+# ---------------------------
+
 data_folder = "data"
 
 documents = []
 metadatas = []
 ids = []
 
-doc_counter = 0
-
 for filename in os.listdir(data_folder):
 
     if not filename.endswith(".txt"):
         continue
 
-    file_path = os.path.join(data_folder, filename)
+    path = os.path.join(data_folder, filename)
 
-    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+
         text = f.read()
 
     chunks = chunk_document(text)
 
-    for chunk_index, chunk in enumerate(chunks):
+    for i, chunk in enumerate(chunks):
 
         documents.append(chunk)
 
-        # metadata helps retrieval later
         metadatas.append({
-            "source_document": filename,
-            "chunk_number": chunk_index
+            "source": filename,
+            "chunk": i
         })
 
-        ids.append(f"{filename}_{chunk_index}")
-
-        doc_counter += 1
+        ids.append(f"{filename}_{i}")
 
 
-print(f"Loaded {doc_counter} chunks into vector database")
+print("Total chunks loaded:", len(documents))
 
-# -----------------------------
-# Create embeddings
-# -----------------------------
+
+# ---------------------------
+# Create Embeddings
+# ---------------------------
+
 embeddings = model.encode(documents).tolist()
 
-# -----------------------------
-# Store in Chroma
-# -----------------------------
+
 collection.add(
     documents=documents,
     embeddings=embeddings,
@@ -91,32 +95,100 @@ collection.add(
     ids=ids
 )
 
-print("Documents indexed successfully.")
 
-# -----------------------------
-# Query loop
-# -----------------------------
+print("Vector DB indexing complete")
+
+
+# ---------------------------
+# Build BM25 Index
+# ---------------------------
+
+tokenized_docs = [doc.split() for doc in documents]
+
+bm25 = BM25Okapi(tokenized_docs)
+
+
+print("BM25 index built")
+
+
+# ---------------------------
+# Query Loop
+# ---------------------------
+
 while True:
 
-    query = input("\nEnter your search query (or type 'exit'): ")
+    query = input("\nEnter your search query (or type exit): ")
 
     if query.lower() == "exit":
         break
 
+
+    # -----------------------
+    # Vector Search
+    # -----------------------
+
     query_embedding = model.encode([query]).tolist()
 
-    results = collection.query(
+    vector_results = collection.query(
         query_embeddings=query_embedding,
-        n_results=3
+        n_results=5
     )
 
-    print("\nTop Results:\n")
+    vector_docs = vector_results["documents"][0]
 
-    for i, doc in enumerate(results["documents"][0]):
 
-        metadata = results["metadatas"][0][i]
+    # -----------------------
+    # BM25 Keyword Search
+    # -----------------------
 
-        print(f"Result {i+1}")
-        print("Source:", metadata["source_document"])
-        print(doc[:500])
-        print("-----------")
+    tokenized_query = query.split()
+
+    bm25_scores = bm25.get_scores(tokenized_query)
+
+    top_bm25_indices = sorted(
+        range(len(bm25_scores)),
+        key=lambda i: bm25_scores[i],
+        reverse=True
+    )[:5]
+
+    bm25_docs = [documents[i] for i in top_bm25_indices]
+
+
+    # -----------------------
+    # Merge Candidate Pool
+    # -----------------------
+
+    candidate_docs = list(set(vector_docs + bm25_docs))
+
+
+    # -----------------------
+    # Re-Ranking Step
+    # -----------------------
+
+    candidate_embeddings = model.encode(candidate_docs)
+
+    query_vec = model.encode(query)
+
+    scored_results = []
+
+    for i, doc in enumerate(candidate_docs):
+
+        similarity = candidate_embeddings[i] @ query_vec
+
+        scored_results.append((doc, similarity))
+
+
+    ranked = sorted(scored_results, key=lambda x: x[1], reverse=True)
+
+
+    # -----------------------
+    # Final Output
+    # -----------------------
+
+    print("\nFinal Ranked Results:\n")
+
+    for doc, score in ranked[:3]:
+
+        print(doc[:400])
+        print("Score:", score)
+        print("------------")
