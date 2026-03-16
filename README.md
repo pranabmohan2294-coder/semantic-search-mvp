@@ -158,4 +158,4 @@ Perplexity, Notion AI, and enterprise knowledge assistants.
 ## Author
 
 Pranab Mohan  
-AI Product Manager — 30-Day Learning Sprint
+AI Product Manager
