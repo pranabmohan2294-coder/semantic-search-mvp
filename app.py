@@ -1,4 +1,4 @@
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, CrossEncoder
 import chromadb
 import os
 import re
@@ -6,10 +6,11 @@ from rank_bm25 import BM25Okapi
 
 
 # ---------------------------
-# Load embedding model
+# Load Models
 # ---------------------------
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
+cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 
 # ---------------------------
@@ -87,14 +88,12 @@ print("Total chunks loaded:", len(documents))
 
 embeddings = model.encode(documents).tolist()
 
-
 collection.add(
     documents=documents,
     embeddings=embeddings,
     metadatas=metadatas,
     ids=ids
 )
-
 
 print("Vector DB indexing complete")
 
@@ -106,7 +105,6 @@ print("Vector DB indexing complete")
 tokenized_docs = [doc.split() for doc in documents]
 
 bm25 = BM25Okapi(tokenized_docs)
-
 
 print("BM25 index built")
 
@@ -131,7 +129,7 @@ while True:
 
     vector_results = collection.query(
         query_embeddings=query_embedding,
-        n_results=5
+        n_results=10
     )
 
     vector_docs = vector_results["documents"][0]
@@ -149,7 +147,7 @@ while True:
         range(len(bm25_scores)),
         key=lambda i: bm25_scores[i],
         reverse=True
-    )[:5]
+    )[:10]
 
     bm25_docs = [documents[i] for i in top_bm25_indices]
 
@@ -162,33 +160,26 @@ while True:
 
 
     # -----------------------
-    # Re-Ranking Step
+    # Cross-Encoder Re-Ranking
     # -----------------------
 
-    candidate_embeddings = model.encode(candidate_docs)
+    pairs = [(query, doc) for doc in candidate_docs]
 
-    query_vec = model.encode(query)
+    ce_scores = cross_encoder.predict(pairs)
 
-    scored_results = []
+    scored_results = list(zip(ce_scores, candidate_docs))
 
-    for i, doc in enumerate(candidate_docs):
-
-        similarity = candidate_embeddings[i] @ query_vec
-
-        scored_results.append((doc, similarity))
-
-
-    ranked = sorted(scored_results, key=lambda x: x[1], reverse=True)
+    ranked = sorted(scored_results, key=lambda x: x[0], reverse=True)
 
 
     # -----------------------
     # Final Output
     # -----------------------
 
-    print("\nFinal Ranked Results:\n")
+    print("\nTop 3 Results (Cross-Encoder Ranked):\n")
 
-    for doc, score in ranked[:3]:
+    for score, doc in ranked[:3]:
 
         print(doc[:400])
-        print("Score:", score)
+        print(f"Cross-Encoder Score: {round(float(score), 4)}")
         print("------------")
