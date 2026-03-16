@@ -1,215 +1,161 @@
-# Semantic Search Engine (Hybrid Retrieval MVP)
+# Semantic Search Engine — Hybrid Retrieval + Cross-Encoder Re-Ranking
 
-This project implements a **Semantic Search Engine with Hybrid Retrieval** using vector embeddings and keyword search.
+This project implements a **Semantic Search Engine** using vector embeddings,
+keyword search, and a **true cross-encoder re-ranker** for production-quality retrieval.
 
-The system retrieves relevant document sections using both **semantic similarity and keyword matching**, then **re-ranks results** to improve retrieval accuracy.
-
-This project is part of a hands-on roadmap to understand how **modern AI retrieval systems and RAG pipelines work**.
+The system is part of a hands-on 30-day roadmap to understand how modern AI
+retrieval systems and RAG pipelines work in production.
 
 ---
 
-# Architecture Overview
-
-The system follows a modern retrieval pipeline used in AI-powered search systems.
-
+## Architecture
+```
 User Query
-↓
-Query Embedding
-↓
-Vector Retrieval (Semantic Search)
-+
-Keyword Retrieval (BM25)
-↓
-Candidate Pool
-↓
-Embedding Re-ranking
-↓
-Top Relevant Results
-
-
----
-
-# Technologies Used
-
-Embedding Model  
-SentenceTransformers  
-Model: `all-MiniLM-L6-v2`
-
-Vector Database  
-Chroma
-
-Keyword Retrieval  
-BM25 (rank-bm25)
-
-Language  
-Python
+    ↓
+Query Embedding (bi-encoder)
+    ↓
+Vector Retrieval (HNSW semantic search) — top 10
+    +
+Keyword Retrieval (BM25) — top 10
+    ↓
+Candidate Pool (merged, deduplicated)
+    ↓
+Cross-Encoder Re-Ranking (query + chunk read together)
+    ↓
+Top 3 Results
+```
 
 ---
 
-# Key Concepts Implemented
+## Technologies
 
-## 1. Document Chunking
-
-Large documents are split into smaller chunks to improve retrieval precision.
-
-Example:
-
-Refund Policy
-→ Refund eligibility  
-→ Refund processing time  
-→ Refund request method
-
-Chunking improves:
-
-- semantic representation
-- retrieval accuracy
-- context relevance
+| Component | Tool |
+|---|---|
+| Embedding model | `all-MiniLM-L6-v2` (SentenceTransformers) |
+| Vector database | Chroma (local, HNSW index) |
+| Keyword search | BM25 (rank-bm25) |
+| Re-ranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Language | Python |
 
 ---
 
-## 2. Embeddings
+## Key Concepts
 
-Each document chunk is converted into a **dense vector embedding** using SentenceTransformers.
+### 1. Document Chunking
+Documents are split on `TITLE:` markers into semantically coherent sections.
+Each chunk is stored with metadata (source filename + chunk index) for traceability.
 
-Example:
+### 2. Bi-Encoder Embeddings
+Each chunk is converted to a dense vector using `all-MiniLM-L6-v2`.
+Embeddings capture semantic meaning — "how to get money back" matches "refund policy."
 
-"Refund eligibility rules"
+### 3. Hybrid Retrieval
+Two retrieval signals are combined:
+- **Vector search** — finds semantically similar chunks via HNSW cosine similarity
+- **BM25** — finds exact keyword matches (product names, codes, specific terms)
 
-↓
+Hybrid beats either signal alone, especially on domain-specific vocabulary.
 
-[0.213, -0.442, 0.129, ...]
+### 4. Cross-Encoder Re-Ranking
+This is the critical upgrade over a standard bi-encoder pipeline.
 
-Embeddings capture **semantic meaning** instead of exact keywords.
+**Bi-encoder (old approach):**
+- Embeds query and chunk independently
+- Score = cosine distance between two separate vectors
+- Fast but approximate — no direct query-chunk interaction
 
----
+**Cross-encoder (current approach):**
+- Reads query + chunk together as a single input
+- Scores relevance as a pair — understands full context
+- Slower, but significantly more accurate on complex queries
 
-## 3. Vector Database
+Model used: `cross-encoder/ms-marco-MiniLM-L-6-v2` — free, runs fully local.
 
-Embeddings are stored in **Chroma**, which enables fast similarity search.
-
-Query embeddings are compared against stored document embeddings to find relevant content.
-
----
-
-## 4. Hybrid Retrieval
-
-The system combines:
-
-Vector Search (semantic meaning)
-
-+
-Keyword Search (BM25)
-
-Vector search works best for:
-
-"how to get money back"
-
-Keyword search works best for:
-
-"refund policy"
-
-Hybrid retrieval improves overall search quality.
+### 5. Candidate Pool Strategy
+Wide net → precise filter:
+- Retrieve top 10 from vector search
+- Retrieve top 10 from BM25
+- Merge and deduplicate into candidate pool
+- Cross-encoder scores all candidates
+- Return top 3 to user
 
 ---
 
-## 5. Candidate Pool
-
-Results from both retrieval methods are merged into a candidate set before ranking.
-
-Vector Results → Top 5  
-BM25 Results → Top 5  
-
-Candidate Pool → Unique merged results
-
----
-
-## 6. Re-Ranking
-
-Candidate documents are re-ranked using embedding similarity.
-
-Steps:
-
-1. Encode candidate documents
-2. Encode query
-3. Compute similarity
-4. Sort results by similarity score
-
-This improves ranking accuracy.
+## Example Queries
+```
+refund policy
+how to get money back
+return conditions
+refund eligibility
+```
 
 ---
 
-# Example Queries
-
-Example queries the system can answer:
-
-refund policy  
-refund eligibility  
-how to get money back  
-return conditions  
-
-The system retrieves the most relevant document chunks from the policy dataset.
+## Repository Structure
+```
+├── app.py          # Main retrieval pipeline
+├── data/           # .txt policy documents
+└── README.md
+```
 
 ---
 
-# Repository Structure
+## Retrieval Pipeline
+```
+Documents → Chunking → Embeddings → Chroma (HNSW)
+                                         ↓
+Query → Embed → Vector Search (k=10) ─┐
+Query → BM25 Search (k=10) ───────────┤
+                                       ↓
+                              Candidate Pool
+                                       ↓
+                         Cross-Encoder Re-Ranking
+                                       ↓
+                               Top 3 Results
+```
 
 ---
 
-# Retrieval Pipeline
+## Capabilities
 
-Documents
-↓
-Chunking
-↓
-Embeddings
-↓
-Vector DB (Chroma)
-↓
-Hybrid Retrieval
-↓
-Re-ranking
-↓
-Top Results
+- Semantic search via dense vector retrieval
+- Keyword search via BM25
+- Hybrid retrieval pipeline
+- True cross-encoder re-ranking (query-chunk pair scoring)
+- Source metadata tracking per result
 
 ---
 
-# Current Capabilities
+## What Changed in This Commit
 
-✔ Semantic search  
-✔ Vector similarity retrieval  
-✔ Keyword search with BM25  
-✔ Hybrid retrieval pipeline  
-✔ Candidate pooling  
-✔ Embedding-based re-ranking  
+Upgraded re-ranking from bi-encoder dot product similarity to a true
+cross-encoder (`ms-marco-MiniLM-L-6-v2`). Previous approach re-scored
+candidates using the same embedding model — not a real cross-encoder.
+Cross-encoder reads query and chunk jointly, producing significantly
+more accurate relevance scores on complex queries.
 
----
-
-# Next Steps
-
-Future improvements planned:
-
-- Retrieval-Augmented Generation (RAG)
-- LLM integration
-- Context-aware answer generation
-- Retrieval evaluation metrics
-- Cross-encoder re-ranking
-- Query expansion
+Also widened candidate pool from k=5 to k=10 for both retrieval
+signals to give the cross-encoder more candidates to work with.
 
 ---
 
-# Learning Objective
+## Next Steps
 
-This project demonstrates the core components behind modern AI search systems used in products like:
-
-- Perplexity
-- Notion AI
-- ChatGPT Retrieval
-- Enterprise knowledge assistants
+- RAG pipeline — add Ollama LLM for answer generation (Week 2)
+- RAGAS evaluation — faithfulness + answer relevancy scores
+- Chunking experiment — compare fixed vs recursive vs semantic
+- Query expansion / HyDE
 
 ---
 
-# Author
+## Learning Objective
 
-Pranab Mohan
+Demonstrates the core retrieval architecture behind products like
+Perplexity, Notion AI, and enterprise knowledge assistants.
 
-AI Product Manager Learning Project
+---
+
+## Author
+
+Pranab Mohan  
+AI Product Manager — 30-Day Learning Sprint
