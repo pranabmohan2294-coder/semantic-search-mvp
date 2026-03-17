@@ -3,6 +3,8 @@ import chromadb
 import os
 import re
 from rank_bm25 import BM25Okapi
+import requests
+import json
 
 
 # ---------------------------
@@ -25,22 +27,16 @@ collection = client.create_collection(
 
 
 # ---------------------------
-# Semantic Chunking Function
+# Chunking Function
 # ---------------------------
 
 def chunk_document(text):
-
     sections = re.split(r'TITLE:', text)
-
     chunks = []
-
     for section in sections:
-
         cleaned = section.strip()
-
         if len(cleaned) > 50:
             chunks.append(cleaned)
-
     return chunks
 
 
@@ -49,35 +45,21 @@ def chunk_document(text):
 # ---------------------------
 
 data_folder = "data"
-
 documents = []
 metadatas = []
 ids = []
 
 for filename in os.listdir(data_folder):
-
     if not filename.endswith(".txt"):
         continue
-
     path = os.path.join(data_folder, filename)
-
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
-
         text = f.read()
-
     chunks = chunk_document(text)
-
     for i, chunk in enumerate(chunks):
-
         documents.append(chunk)
-
-        metadatas.append({
-            "source": filename,
-            "chunk": i
-        })
-
+        metadatas.append({"source": filename, "chunk": i})
         ids.append(f"{filename}_{i}")
-
 
 print("Total chunks loaded:", len(documents))
 
@@ -103,10 +85,45 @@ print("Vector DB indexing complete")
 # ---------------------------
 
 tokenized_docs = [doc.split() for doc in documents]
-
 bm25 = BM25Okapi(tokenized_docs)
 
 print("BM25 index built")
+
+
+# ---------------------------
+# Ollama Generation Function
+# ---------------------------
+
+def generate_answer(query, context_chunks):
+
+    context = "\n\n".join([
+        f"[Source {i+1}]\n{chunk}"
+        for i, chunk in enumerate(context_chunks)
+    ])
+
+    prompt = f"""You are a helpful customer service assistant. Use the context below to answer the question.
+The context contains policy information. Interpret it helpfully and connect it to what the user is asking.
+Only say you don't know if the context truly contains nothing relevant.
+Be concise and direct.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={
+            "model": "llama3.2",
+            "prompt": prompt,
+            "stream": False
+        }
+    )
+
+    result = response.json()
+    return result["response"].strip()
 
 
 # ---------------------------
@@ -115,7 +132,7 @@ print("BM25 index built")
 
 while True:
 
-    query = input("\nEnter your search query (or type exit): ")
+    query = input("\nEnter your question (or type exit): ")
 
     if query.lower() == "exit":
         break
@@ -140,7 +157,6 @@ while True:
     # -----------------------
 
     tokenized_query = query.split()
-
     bm25_scores = bm25.get_scores(tokenized_query)
 
     top_bm25_indices = sorted(
@@ -164,22 +180,23 @@ while True:
     # -----------------------
 
     pairs = [(query, doc) for doc in candidate_docs]
-
     ce_scores = cross_encoder.predict(pairs)
-
     scored_results = list(zip(ce_scores, candidate_docs))
-
     ranked = sorted(scored_results, key=lambda x: x[0], reverse=True)
 
+    top_chunks = [doc for _, doc in ranked[:3]]
+
 
     # -----------------------
-    # Final Output
+    # Generate Answer
     # -----------------------
 
-    print("\nTop 3 Results (Cross-Encoder Ranked):\n")
+    print("\nGenerating answer...\n")
+    answer = generate_answer(query, top_chunks)
 
-    for score, doc in ranked[:3]:
-
-        print(doc[:400])
-        print(f"Cross-Encoder Score: {round(float(score), 4)}")
-        print("------------")
+    print("Answer:")
+    print(answer)
+    print("\nSources used:")
+    for i, chunk in enumerate(top_chunks):
+        print(f"\n[{i+1}] {chunk[:200]}...")
+        print(f"     Score: {round(float(ranked[i][0]), 4)}")
