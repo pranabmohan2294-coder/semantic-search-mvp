@@ -1,28 +1,29 @@
-# Semantic Search Engine — Hybrid Retrieval + Cross-Encoder Re-Ranking
+# RAG Pipeline — Hybrid Retrieval + Cross-Encoder + LLM Generation
 
-This project implements a **Semantic Search Engine** using vector embeddings,
-keyword search, and a **true cross-encoder re-ranker** for production-quality retrieval.
-
-The system is part of a hands-on 30-day roadmap to understand how modern AI
-retrieval systems and RAG pipelines work in production.
+A production-quality RAG (Retrieval-Augmented Generation) system built
+as part of a 30-day AI PM learning sprint. Week 1 was semantic search.
+Week 2 is the full RAG pipeline — retrieval, re-ranking, generation,
+and evaluation.
 
 ---
 
 ## Architecture
 ```
-User Query
-    ↓
-Query Embedding (bi-encoder)
-    ↓
-Vector Retrieval (HNSW semantic search) — top 10
-    +
-Keyword Retrieval (BM25) — top 10
-    ↓
-Candidate Pool (merged, deduplicated)
-    ↓
-Cross-Encoder Re-Ranking (query + chunk read together)
-    ↓
-Top 3 Results
+Documents → Chunking → Embeddings → Chroma (HNSW index)
+                                           ↓
+User Query → Embed → Vector Search (k=10) ─┐
+User Query → BM25 Search (k=10) ───────────┤
+                                            ↓
+                                   Candidate Pool
+                                            ↓
+                          Cross-Encoder Re-Ranking
+                          (query + chunk scored as pair)
+                                            ↓
+                                        Top 3 Chunks
+                                            ↓
+                             Ollama llama3.2 (local LLM)
+                                            ↓
+                          Natural language answer + citations
 ```
 
 ---
@@ -31,131 +32,131 @@ Top 3 Results
 
 | Component | Tool |
 |---|---|
-| Embedding model | `all-MiniLM-L6-v2` (SentenceTransformers) |
+| Embedding model | `all-MiniLM-L6-v2` (SentenceTransformers, local) |
 | Vector database | Chroma (local, HNSW index) |
 | Keyword search | BM25 (rank-bm25) |
-| Re-ranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| Language | Python |
+| Re-ranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` (local) |
+| LLM generation | Ollama llama3.2 (local, free) |
+| Evaluation | Custom recall + precision scoring (evaluate.py) |
+| Language | Python 3.9 |
+
+Zero API costs. Fully local. No data leaves the machine.
+
+---
+
+## Evaluation Results
+
+Tested on 5 policy queries with ground truth answers.
+
+| Metric | Score | Benchmark | Status |
+|---|---|---|---|
+| Context recall | 0.886 | > 0.6 | PASS |
+| Context precision | 0.731 | > 0.7 | PASS |
+
+**Weak spot identified:** Colloquial queries ("how do I get my money
+back") score recall 0.562 — below benchmark. Root cause: vocabulary
+gap between natural language and policy document language. BM25
+contributes nothing when there is zero keyword overlap.
+
+**Fix planned for V2:** Query rewriting — rewrite colloquial user
+queries into policy language before retrieval using an LLM call.
 
 ---
 
 ## Key Concepts
 
-### 1. Document Chunking
-Documents are split on `TITLE:` markers into semantically coherent sections.
-Each chunk is stored with metadata (source filename + chunk index) for traceability.
+### 1. Hybrid Retrieval
+Combines two signals:
+- Vector search — semantic similarity via HNSW cosine distance
+- BM25 — exact keyword matching
 
-### 2. Bi-Encoder Embeddings
-Each chunk is converted to a dense vector using `all-MiniLM-L6-v2`.
-Embeddings capture semantic meaning — "how to get money back" matches "refund policy."
+Hybrid beats either signal alone. Vector search handles "how do I get
+my money back." BM25 handles "Error code E404-B."
 
-### 3. Hybrid Retrieval
-Two retrieval signals are combined:
-- **Vector search** — finds semantically similar chunks via HNSW cosine similarity
-- **BM25** — finds exact keyword matches (product names, codes, specific terms)
+### 2. Cross-Encoder Re-Ranking
+The critical upgrade from Week 1.
 
-Hybrid beats either signal alone, especially on domain-specific vocabulary.
+**Bi-encoder (Week 1):** embeds query and chunk independently, scores
+via cosine distance. Fast but no direct query-chunk interaction.
 
-### 4. Cross-Encoder Re-Ranking
-This is the critical upgrade over a standard bi-encoder pipeline.
+**Cross-encoder (Week 2):** reads query + chunk together as a pair.
+Scores relevance jointly. Slower but significantly more accurate on
+complex queries.
 
-**Bi-encoder (old approach):**
-- Embeds query and chunk independently
-- Score = cosine distance between two separate vectors
-- Fast but approximate — no direct query-chunk interaction
+Scores are raw logits — unbounded, can be positive or negative.
+What matters is the ranking, not the absolute value.
 
-**Cross-encoder (current approach):**
-- Reads query + chunk together as a single input
-- Scores relevance as a pair — understands full context
-- Slower, but significantly more accurate on complex queries
+- High positive score (e.g. 6.78) = strong match, high confidence
+- Negative scores clustered close = weak match, low confidence
+- All scores very negative and clustered = nothing relevant in corpus
 
-Model used: `cross-encoder/ms-marco-MiniLM-L-6-v2` — free, runs fully local.
+### 3. LLM Generation with Faithfulness Guardrail
+Retrieved chunks are passed to Ollama llama3.2 with a prompt that
+instructs the model to answer only from provided context. If no
+relevant context exists, the system says "I don't have enough
+information" rather than hallucinating.
 
-### 5. Candidate Pool Strategy
-Wide net → precise filter:
-- Retrieve top 10 from vector search
-- Retrieve top 10 from BM25
-- Merge and deduplicate into candidate pool
-- Cross-encoder scores all candidates
-- Return top 3 to user
+Tested on out-of-scope queries ("car wash policy", "food policy") —
+system correctly declined to answer both times.
+
+### 4. Evaluation Framework
+`evaluate.py` measures retrieval quality against ground truth answers:
+- Context recall — did retrieval find the right information?
+- Context precision — are retrieved chunks genuinely relevant?
 
 ---
 
-## Example Queries
-```
-refund policy
-how to get money back
-return conditions
-refund eligibility
-```
+## Failure Cases Documented
+
+1. Colloquial queries (recall 0.562) — vocabulary gap, fix via query rewriting
+2. Out-of-scope queries — handled correctly, guardrail working
+3. Chunk titles use policy language, not user-intent language — semantic gap
+4. No faithfulness score yet — requires LLM-as-judge (V2)
+5. Negative cross-encoder scores on weak matches — expected behaviour, not a bug
 
 ---
 
 ## Repository Structure
 ```
-├── app.py          # Main retrieval pipeline
-├── data/           # .txt policy documents
+├── app.py          # Full RAG pipeline — retrieval + generation
+├── evaluate.py     # Evaluation framework — recall + precision
+├── data/           # .txt policy documents (5 files, 75 chunks)
 └── README.md
 ```
 
 ---
 
-## Retrieval Pipeline
-```
-Documents → Chunking → Embeddings → Chroma (HNSW)
-                                         ↓
-Query → Embed → Vector Search (k=10) ─┐
-Query → BM25 Search (k=10) ───────────┤
-                                       ↓
-                              Candidate Pool
-                                       ↓
-                         Cross-Encoder Re-Ranking
-                                       ↓
-                               Top 3 Results
-```
+## V2 Roadmap
+
+- Query rewriting before retrieval (fix colloquial query recall)
+- Faithfulness scoring with Ollama as judge
+- Upgrade embedding model to `all-mpnet-base-v2` (768 dims)
+- Confidence threshold guardrail (decline when all scores clustered low)
+- 50-question test set from real user queries
 
 ---
 
-## Capabilities
+## Week-by-Week Progress
 
-- Semantic search via dense vector retrieval
-- Keyword search via BM25
-- Hybrid retrieval pipeline
-- True cross-encoder re-ranking (query-chunk pair scoring)
-- Source metadata tracking per result
+**Week 1 — Semantic Search Engine**
+Hybrid retrieval (HNSW + BM25), true cross-encoder re-ranking,
+evaluation framework. Scores: recall 0.886, precision 0.731.
 
----
-
-## What Changed in This Commit
-
-Upgraded re-ranking from bi-encoder dot product similarity to a true
-cross-encoder (`ms-marco-MiniLM-L-6-v2`). Previous approach re-scored
-candidates using the same embedding model — not a real cross-encoder.
-Cross-encoder reads query and chunk jointly, producing significantly
-more accurate relevance scores on complex queries.
-
-Also widened candidate pool from k=5 to k=10 for both retrieval
-signals to give the cross-encoder more candidates to work with.
-
----
-
-## Next Steps
-
-- RAG pipeline — add Ollama LLM for answer generation (Week 2)
-- RAGAS evaluation — faithfulness + answer relevancy scores
-- Chunking experiment — compare fixed vs recursive vs semantic
-- Query expansion / HyDE
+**Week 2 — RAG Pipeline**
+Added Ollama LLM generation, prompt template with faithfulness
+guardrail, full end-to-end RAG pipeline. All components local and free.
 
 ---
 
 ## Learning Objective
 
-Demonstrates the core retrieval architecture behind products like
+Built as part of a 30-day AI PM sprint to go from AI-aware to
+AI-fluent. Demonstrates the core architecture behind products like
 Perplexity, Notion AI, and enterprise knowledge assistants.
 
 ---
 
 ## Author
 
-Pranab Mohan  
-AI Product Manager
+Pranab Mohan
+AI Product Manager — 30-Day Learning Sprint
