@@ -1,0 +1,62 @@
+Account and Security Policy
+
+TITLE: Account Creation Customers must provide a valid email address and
+phone number to create an account on the platform.
+
+TITLE: Account Verification New accounts are verified through a one-time
+password sent to the registered email or mobile number.
+
+TITLE: Password Requirements Passwords must be at least eight characters
+long and include a combination of letters numbers and special characters.
+
+TITLE: Password Reset Customers can reset their password through the
+forgot password option using their registered email or phone number.
+
+TITLE: Two Factor Authentication Two-factor authentication is available
+and strongly recommended for enhanced account security.
+
+TITLE: Account Login Attempts Accounts are temporarily locked after five
+consecutive failed login attempts to prevent unauthorised access.
+
+TITLE: Session Management Active sessions are automatically logged out
+after thirty minutes of inactivity on web and mobile platforms.
+
+TITLE: Device Management Customers can view and remove trusted devices
+from the security settings section of their account.
+
+TITLE: Account Suspension Accounts violating platform policies may be
+suspended pending investigation without prior notice.
+
+TITLE: Account Deletion Customers may request permanent account deletion
+through the account settings page subject to pending order completion.
+
+TITLE: Data Access on Deletion Upon account deletion personal data is
+removed within thirty days subject to legal retention obligations.
+
+TITLE: Suspicious Activity Alerts Customers receive real-time alerts for
+unusual login activity or unauthorised account access attempts.
+
+TITLE: Third Party Login Customers may sign in using Google or Facebook
+accounts subject to those platforms' authentication policies.
+
+TITLE: Account Transfer Account ownership cannot be transferred to
+another individual or entity under any circumstances.
+
+TITLE: Minor Accounts Users below eighteen years of age must have
+parental consent before creating and operating an account.
+
+TITLE: Account Merging Multiple accounts belonging to the same user
+cannot be merged and duplicate accounts may be suspended.
+
+TITLE: Security Breach Response In the event of a security breach
+affected accounts are locked and customers are notified immediately.
+
+TITLE: Phishing Awareness Customers are advised not to share login
+credentials and to report phishing attempts through the support portal.
+
+TITLE: Account Inactivity Accounts with no activity for twenty four
+months may be deactivated after prior notification to the registered
+email.
+
+TITLE: Business Account Security Business accounts have additional
+security controls including role-based access and audit log monitoring.

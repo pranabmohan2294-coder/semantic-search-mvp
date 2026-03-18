@@ -1,0 +1,72 @@
+Exchange Policy
+
+TITLE: Exchange Eligibility Products can be exchanged within seven days
+of delivery if the item is unused in original packaging and the
+exchange reason is valid.
+
+TITLE: Exchange Request Process Customers initiate an exchange request
+through the order history page by selecting the item and choosing the
+exchange option.
+
+TITLE: Exchange Reasons Valid exchange reasons include wrong size wrong
+colour defective product and incorrect item delivered.
+
+TITLE: Exchange Pickup and Delivery The original item is picked up by
+the logistics partner and the replacement is dispatched simultaneously
+or within two business days.
+
+TITLE: Exchange Availability Exchange is subject to product availability
+in the requested variant at the time of the exchange request.
+
+TITLE: Exchange Price Difference If the exchanged item has a higher
+price the customer must pay the difference before the replacement is
+dispatched.
+
+TITLE: Exchange Refund for Lower Price If the replacement item is priced
+lower than the original a refund for the difference is issued to the
+original payment method.
+
+TITLE: Exchange Inspection The returned item from an exchange is
+inspected at the warehouse before the replacement is confirmed.
+
+TITLE: Exchange Rejection Exchanges may be rejected if the product
+shows signs of use damage or missing components upon inspection.
+
+TITLE: Exchange for Defective Products Customers receiving defective
+products can opt for an exchange or a full refund within the eligible
+window.
+
+TITLE: Exchange Notification Customers receive confirmation of the
+exchange request approval and estimated delivery of the replacement.
+
+TITLE: Exchange Restrictions Certain product categories including
+personalised items perishables and digital products are not eligible
+for exchange.
+
+TITLE: One Exchange Per Order Each product can be exchanged only once
+per order and repeat exchange requests for the same item are not
+permitted.
+
+TITLE: Exchange Documentation Customers may be required to submit
+photographs of the product to support the exchange request.
+
+TITLE: Exchange During Sale Items purchased during flash sales or
+clearance events may have restricted or no exchange eligibility.
+
+TITLE: International Order Exchange Exchanges are not available for
+internationally shipped orders due to customs and logistics constraints.
+
+TITLE: Exchange Escalation If an exchange request is rejected
+customers may escalate to the resolution team through the support
+portal.
+
+TITLE: Exchange Tracking Customers can track the status of their
+exchange including pickup and replacement delivery on the order page.
+
+TITLE: Exchange and Loyalty Points Loyalty points earned on the
+original purchase are retained during an exchange unless a refund is
+processed.
+
+TITLE: Exchange Policy Review The exchange policy is reviewed
+periodically and customers are notified of changes with adequate
+notice.

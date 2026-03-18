@@ -1,0 +1,78 @@
+Fraud and Abuse Policy
+
+TITLE: Fraud Detection Systems The platform uses automated fraud
+detection systems to identify suspicious transactions and account
+behaviour in real time.
+
+TITLE: Order Fraud Indicators Orders flagged for fraud include
+mismatched billing and delivery addresses unusually high order values
+and multiple failed payment attempts.
+
+TITLE: Account Takeover Prevention Customers are alerted via email and
+SMS when a new device or location is used to access their account.
+
+TITLE: Chargeback Fraud Customers who repeatedly initiate illegitimate
+chargebacks may have their accounts suspended and be reported to
+payment networks.
+
+TITLE: Refund Abuse Customers misusing the refund process by returning
+used or damaged products or making false claims are subject to account
+action.
+
+TITLE: Discount Code Abuse Bulk purchasing using discount codes for
+resale purposes is prohibited and may result in order cancellation and
+account suspension.
+
+TITLE: Fake Review Fraud Submitting fake reviews incentivised reviews
+or using multiple accounts to manipulate ratings is strictly prohibited.
+
+TITLE: Identity Fraud Using another person's identity payment details
+or account credentials to make purchases is a criminal offence and
+will be reported to authorities.
+
+TITLE: Seller Fraud Sellers engaging in counterfeit sales fake
+listings or payment manipulation will be permanently banned and may
+face legal action.
+
+TITLE: Bot and Automated Purchasing The use of bots scripts or
+automated tools to purchase limited products or exploit flash sales is
+prohibited.
+
+TITLE: Referral Fraud Creating fake referrals or self-referrals to earn
+loyalty points or referral bonuses is considered fraud and points will
+be reversed.
+
+TITLE: Fraud Reporting Customers who suspect fraud or have experienced
+fraudulent activity can report it through the dedicated fraud
+reporting form.
+
+TITLE: Investigation Process Fraud reports are investigated within five
+business days and customers are informed of the outcome and any actions
+taken.
+
+TITLE: Account Freeze During Investigation Accounts under fraud
+investigation may be temporarily frozen to prevent further transactions
+pending resolution.
+
+TITLE: Legal Action The platform reserves the right to pursue legal
+action against individuals engaged in proven fraudulent activity.
+
+TITLE: Fraud Prevention Education Customers are provided with resources
+and tips on identifying and avoiding fraud including phishing and
+impersonation scams.
+
+TITLE: Collaborative Fraud Prevention The platform collaborates with
+payment networks banks and law enforcement to prevent and address
+fraud.
+
+TITLE: Fraud Liability Customers who knowingly participate in fraud
+are liable for any financial losses incurred by the platform or third
+parties.
+
+TITLE: Fraud Policy Review The fraud and abuse policy is reviewed
+quarterly to address emerging fraud patterns and update prevention
+measures.
+
+TITLE: Whistleblower Protection Employees or sellers reporting internal
+fraud in good faith are protected under the platform's whistleblower
+policy.
